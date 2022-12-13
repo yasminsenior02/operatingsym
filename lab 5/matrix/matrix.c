@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-// Yasmin Senior
+// Credit to Yasmin Senior + Deante Taylor
 #define MAX 4
 #define UPPER 10
 #define LOWER 2

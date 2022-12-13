@@ -1,4 +1,3 @@
-//Yasmin Senior
 
 #include  <stdio.h>
 #include  <string.h>

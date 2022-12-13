@@ -2,7 +2,7 @@
 // 
 // Interface definition for linked list.
 //
-// Yasmin Senior
+// Yasmin Senior 
 
 #include <stdbool.h>
 

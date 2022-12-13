@@ -5,8 +5,7 @@
 #include<string.h> 
 #include<sys/wait.h> 
 
-//Credit to: Professor Burge Pipes Lab-Lecture, 18 OCT 21
-  
+//Credit to: Yasmin Senior + Deante Taylor
 int main() 
 { 
    
