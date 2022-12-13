@@ -1,8 +1,9 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <pthread.h>
-// Credit to Yasmin Senior + Deante Taylor
+// Yasmin Senior
 #define MAX 4
 #define UPPER 10
 #define LOWER 2
@@ -67,7 +68,7 @@ void* computeProduct(void* args) {
 	int row = (*index)/MAX;
 	int col = (*index)%MAX;
 	
-	matProductResult[row][col] = matA[row][col] * matB[row][col];
+	matProductResult[row][col] += matA[row][col] * matB[row][col];
 }
 
 int main() {

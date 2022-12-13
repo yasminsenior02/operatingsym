@@ -1,84 +1,103 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-// Yasmin Senior 
-/**
- * Executes the command "cat scores | grep Lakers".  In this quick-and-dirty
- * implementation the parent doesn't wait for the child to finish and
- * so the command prompt may reappear before the child terminates.
- *
- */
-
-int main(int argc, char **argv)
-{
-  int pipefd[4];
-  int pid, pid2;
-
-  char *cat_args[] = {"cat", "scores", NULL};
-  char *grep_args[] = {"grep", "Lakers", NULL};
-  char *sort_args[] = {"sort", NULL, NULL};
-
-  // make a pipe (fds go in pipefd[0] and pipefd[1])
-  if(argc < 1) {
-    printf("Enter the grep arg (e.g. \"Lakers or 28\")\n");
-  }
-
-  grep_args[1] = argv[1];
+#include<stdio.h> 
+#include<stdlib.h> 
+#include<unistd.h> 
+#include<sys/types.h> 
+#include<string.h> 
+#include<sys/wait.h> 
+  // recieved help from Munir credit to Yasmin
+int main() 
+{ 
+    // We use two pipes 
+    // First pipe to send input string from parent 
+    // Second pipe to send concatenated string from child 
   
-  pipe(pipefd);
+    int fd1[2];  
+    int fd2[2];  
+  
+    char fixed_str[] = "howard.edu"; 
+    char input_str[100];
 
-  pid = fork();
+    char inputstr2[100];
 
-  if (pid == 0)
-    {
-      pid2 = fork();
-      if (pid2 == 0) {
-        dup2(pipefd[0], 0);
-        close(pipefd[3]);
-        close(pipefd[1]);
-        close(pipefd[0]);
-        execvp("sort", sort_args);
-       }
-    
-      else if (pid2 < 0) {
-        printf("error");
-      }
-    
-      else {
-        // child gets here and handles "grep Villanova"
+    pid_t p; 
+  
+    if (pipe(fd1)==-1) 
+    { 
+        fprintf(stderr, "Pipe Failed" ); 
+        return 1; 
+    } 
+    if (pipe(fd2)==-1) 
+    { 
+        fprintf(stderr, "Pipe Failed" ); 
+        return 1; 
+    } 
+  
+    printf("Enter a string to concatenate:");
+    scanf("%s", input_str); 
+    p = fork(); 
+  
+    if (p < 0) 
+    { 
+        fprintf(stderr, "fork Failed" ); 
+        return 1; 
+    } 
+  
+    else if (p > 0) 
+    { 
+  
+        close(fd1[0]);  // Close reading pipe
+  
+        // Write input string
+        write(fd1[1], input_str, strlen(input_str)+1); 
+        
+  
+        wait(NULL); 
+  
+        close(fd1[1]);
 
-      // replace standard input with input part of pipe
+//---------------------------------------------------------
+        close(fd2[1]); // close writing end of pipe 2
+        char concat_str[100]; 
 
-      dup2(pipefd[0], 0);
-      dup2(pipefd[3], 1);
+        read(fd2[0], concat_str, 100);
 
-      // close unused hald of pipe
+        printf("Concatenated string %s\n", concat_str);
+        close(fd2[0]);
 
-      close(pipefd[1]);
-      close(pipefd[2]);
+    } 
+  
+    // child process is reading from pipe fd1
+    else
+    { 
+        close(fd1[1]);  // Close writing end of first pipes 
+      
+        // Read a string using first pipe 
+        char concat_str[100]; 
+        read(fd1[0], concat_str, 100); 
+  
+        // Concatenate a fixed string with it 
+        int k = strlen(concat_str); 
+        int i; 
+        for (i=0; i<strlen(fixed_str); i++) 
+            concat_str[k++] = fixed_str[i]; 
+  
+        concat_str[k] = '\0';   // string ends with '\0' 
+  
+        printf("Concatenated string %s\n", concat_str);
+        // Close both reading ends 
+        close(fd1[0]); 
 
-      // execute grep
 
-      execvp("grep", grep_args);
-      }
-    }
-  else
-    {
-      // parent gets here and handles "cat scores"
+        printf("Enter a string to concatenate:");
+        scanf("%s", inputstr2); 
+        strcat(concat_str, inputstr2);
+        close(fd2[0]); // close reading end of pipe 2
+        // write new input string/concat string to pipe 2
+        write(fd2[1], concat_str, strlen(concat_str)+1); 
 
-      // replace standard output with output part of pipe
+        wait(NULL);
+        close(fd2[1]);
 
-      dup2(pipefd[1], 1);
-
-      // close unused unput half of pipe
-
-      close(pipefd[0]);
-      close(pipefd[3]);
-
-      // execute cat
-
-      execvp("cat", cat_args);
-    }
-}
+        exit(0); 
+    } 
+} 
